@@ -6,6 +6,7 @@ $agent=$_SERVER['HTTP_USER_AGENT'];
 $str="";
 $title="TopSape Chan";
 
+
 function psot($n,$string=array('пост','поста','постов'))
 {
     $n = abs($n) % 100;
@@ -64,7 +65,7 @@ function show_tred($row) {
 	global $host,$list_moderators;
 	$chan="";
 
-	$comment=$row['comment']; 
+	$comment=wakaba($row['comment']);//убрал вакабу
 	$pubdate=russian_date("j F Y, H:i",$row['pubdate']);
 	$id=$row['id']; 
 	$pic=$row['pic'];
@@ -234,13 +235,16 @@ if(!is_numeric($q) && !isset($_POST['submit']) && $q!="stats" && $q!="top") {
 	</div>
 	<p>
 	';
-
+	
+	if(isset($_POST['sq'])) $str.= "<h2>Результаты поиска отображены ниже:</h2>";
+	
 	$str.='<div id="update_status"></div><div id="search_form">
-	<form action="../search/" method="POST">Поиск по чану: <input name="sq" class="sf" type="text" placeholder="Введите запрос" />
+	<form action="/chan/" method="POST">Поиск по чану: <input name="sq" class="sf" type="text" placeholder="Введите запрос" />
 	<input type="submit" value="Искать" />
 	<select name="s_option">
 	  <option value="g">Goolge Search</option>
 	  <option value="y">Yandex поиск</option>
+	  <option value="db">Поиск по базе данных</option>
 	</select>
 	</form></div>';
 
@@ -257,7 +261,21 @@ else {
 	$chan="";
 
 	$ic=0;
-	$res=mysql_query("SELECT * FROM chan WHERE parent=0 AND status=0 ORDER by lastpubdate DESC LIMIT $limit,20"); 
+	
+	$q = "SELECT * FROM chan WHERE parent=0 AND status=0 ORDER by lastpubdate DESC LIMIT $limit,20";
+	
+	if(isset($_POST['sq']) && isset($_POST['s_option'])){//собственно поиск.
+		$se_type=$_POST['s_option'];
+		$search_q = mysql_real_escape_string($_POST['sq']);
+		if($se_type == "g"){//если гугл или яша - редиректим
+			header("Location: http://google.ru/search?q=site:http://topsape.ru/chan/ ".urlencode(" ".$search_q));
+		}else
+		if($se_type == "y"){
+			header("Location: http://yandex.ru/search?text=".urlencode("site:http://topsape.ru/chan/ ".$search_q));
+		}
+		$q = "SELECT * FROM `chan` WHERE `comment` LIKE '%$search_q%' OR `title` LIKE '%$search_q%'";
+	}
+	$res=mysql_query($q); 
 	while($row=mysql_fetch_array($res)) {
 		
 		$ic++;
@@ -267,7 +285,7 @@ else {
 
 		$countpar=mysql_num_rows(mysql_query("SELECT id FROM chan WHERE parent=$id AND status=0")); if($countpar<=10) $cp=0; else $cp=$countpar-10; 
 		if($cp>0) $chan.="\n\n<div style=\"clear: both;\"><a href=\"http://$host/chan/$id/\">Скрыто $cp постов</a></div>\n\n";
-
+		
 		$res2=mysql_query("SELECT * FROM chan WHERE parent=$id AND status=0 ORDER by pubdate ASC LIMIT $cp,10"); 
 		while($row2=mysql_fetch_array($res2)) $chan.=show_tred($row2);
 
