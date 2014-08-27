@@ -6,7 +6,7 @@ if(isset($_SERVER['HTTP_X_REAL_IP'])) $ip=$_SERVER['HTTP_X_REAL_IP']; else $ip=$
 
 $y=date("Y"); $m=date("n"); $d=date("d");
 
-$mysql=mysql_connect('localhost','chan','pass');
+$mysql=mysql_connect('localhost','root','');
 
 
 #Список модераторов

@@ -6,26 +6,6 @@ $agent=$_SERVER['HTTP_USER_AGENT'];
 $str="";
 $title="TopSape Chan";
 
-function wakaba($text){
-	$text=stripslashes($text);
-
-	$text=str_replace("&amp;","&",$text);
-	$text=str_replace("&#","^^^",$text);
-
-	$text = preg_replace('|(*ANY)#(\d*)|',' <a id="showtred" class="$1" style="cursor: pointer; color: blue;">#$1</a>',$text);
-
-	$text=str_replace("^^^","&#",$text);
-
-	$text = preg_replace('/^(\/[^\>](.*))\n/m', '<span class=cit>\\1</span>', $text."\n");
-
-	$text= preg_replace("/(^|[\n ])([\w]*?)((ht|f)tp(s)?:\/\/[\w]+[^ \,\"\n\r\t<]*)/is", "$1$2<a rel=nofollow href=\"$3\" >$3</a>", $text);
-	$text= preg_replace("/(^|[\n ])([\w]*?)((www|ftp)\.[^ \,\"\t\n\r<]*)/is", "$1$2<a rel=nofollow href=\"http://$3\" >$3</a>", $text);
-
-	return nl2br($text);
-}
-
-
-
 function psot($n,$string=array('пост','поста','постов'))
 {
     $n = abs($n) % 100;
@@ -84,7 +64,7 @@ function show_tred($row) {
 	global $host,$list_moderators;
 	$chan="";
 
-	$comment=wakaba($row['comment']); 
+	$comment=$row['comment']; 
 	$pubdate=russian_date("j F Y, H:i",$row['pubdate']);
 	$id=$row['id']; 
 	$pic=$row['pic'];
@@ -255,7 +235,14 @@ if(!is_numeric($q) && !isset($_POST['submit']) && $q!="stats" && $q!="top") {
 	<p>
 	';
 
-	$str.='<div id="update_status"></div>';
+	$str.='<div id="update_status"></div><div id="search_form">
+	<form action="../search/" method="POST">Поиск по чану: <input name="sq" class="sf" type="text" placeholder="Введите запрос" />
+	<input type="submit" value="Искать" />
+	<select name="s_option">
+	  <option value="g">Goolge Search</option>
+	  <option value="y">Yandex поиск</option>
+	</select>
+	</form></div>';
 
 $admin=0;
 if(isset($_COOKIE['login'])){
